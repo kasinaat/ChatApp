@@ -9,6 +9,7 @@ public class UserService {
     static BufferedReader br = null;
     static Console console = null;
     public static List<User> users;
+    public static List<Group> groups;
 
     @SuppressWarnings("unchecked")
     public static List<User> loadUsers() {
@@ -21,16 +22,38 @@ public class UserService {
         } catch (Exception e) {
 
         }
-
         return users;
     }
+    @SuppressWarnings("unchecked")
+    public static List<Group> loadGroups() {
+        try {
+            groups = new ArrayList<Group>();
+            FileInputStream fis = new FileInputStream(
+                    "C:\\Users\\Administrator\\Desktop\\Assignments\\ChatApp\\lib\\groups.txt");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            groups = (List<Group>) ois.readObject();
+        } catch (Exception e) {
 
-    public static void storeUsers(List<User> newUsers) {
+        }
+        return groups;
+    }
+    public static void storeGroups() {
+        try {
+            FileOutputStream fos = new FileOutputStream(
+                    "C:\\Users\\Administrator\\Desktop\\Assignments\\ChatApp\\lib\\groups.txt");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(groups);
+        } catch (Exception e) {
+
+        }
+    }
+
+    public static void storeUsers() {
         try {
             FileOutputStream fos = new FileOutputStream(
                     "C:\\Users\\Administrator\\Desktop\\Assignments\\ChatApp\\lib\\users.txt");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(newUsers);
+            oos.writeObject(users);
         } catch (Exception e) {
 
         }
@@ -50,7 +73,7 @@ public class UserService {
             for (User each : users) {
                 // System.out.println(each.getPassword()+" "+user.getPassword());
                 if (each.compareTo(user) == 0) {
-                    System.out.println(user.getGroups());
+                    // System.out.println(user.getGroups());
                     return each;
                 }
             }

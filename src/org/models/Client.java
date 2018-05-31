@@ -85,6 +85,7 @@ public class Client extends Thread {
         int portNum = 8888;
         User user = null;
         int option = 0;
+        List<Group> groups;
         BufferedReader br = null;
         try {
             br = new BufferedReader(new InputStreamReader(System.in));
@@ -101,7 +102,7 @@ public class Client extends Thread {
             try {
                 user = UserService.login();
                 boolean clientFlag = true;
-                System.out.println(user.getGroups());
+                // System.out.println(user.getGroups());
                 if (user != null) {
                     System.out.println("Logged In Successfully!");
                     Client client = new Client("localhost", portNum, user);
@@ -122,27 +123,24 @@ public class Client extends Thread {
                             Group group = new Group(groupName);
                             System.out.print("Enter usernames in comma seperated :");
                             String[] users = br.readLine().split(",");
-                            List<User> newUsers = UserService.loadUsers();
-                            UserService.users = newUsers;
-                            user.getGroups().add(group);
-                            for (String each : users) {
-                                for (User one : newUsers) {
-                                    if (each.equals(one.getUsername())) {
-                                        group.getUsers().add(one);
-                                        one.getGroups().add(group);
-                                        System.out.println(one.getGroups());
-                                    }
+                            for (User var : UserService.loadUsers()) {
+                                for (String each : users) {
+                                    if (var.getUsername().equals(each))
+                                        group.getUsers().add(var);
                                 }
                             }
-                            // System.out.println(group.getUsers());
-                            // System.out.println(user.getGroups());
-                            UserService.storeUsers(newUsers);
-                            
+                            groups = UserService.loadGroups();
+                            groups.add(group);
+                            UserService.storeGroups();
                             System.out.println("Group Created Successfully\nUse #<groupName># to send message");
                             continue;
-                        } else if(content.getMessage().equalsIgnoreCase("#groups")){
-                                for(Group one :user.getGroups())
-                                    System.out.println(one.getName());
+                        } else if (content.getMessage().equalsIgnoreCase("#groups")) {
+                            for (Group each : UserService.loadGroups()) {
+                                for (User one:each.getUsers()) {
+                                    if(one.getUsername().equals(user.getUsername()))
+                                        System.out.println(each.getName());
+                                }
+                            }
                             continue;
                         }
                         client.send(content);

@@ -7,6 +7,7 @@ public class Message implements Serializable {
     private String sender;
     private String receiver;
     private String message;
+    private String groupName;
     public Message(String message){
         this.message = message;
     }

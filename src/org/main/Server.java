@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import org.models.*;
+import org.services.UserService;
 
 public class Server {
     List<ClientThread> activeClients;
@@ -63,6 +64,7 @@ public class Server {
         ObjectOutputStream oos;
         User user;
         Message message;
+        public List<User> users;
 
         public void setUser(User user) {
             this.user = user;
@@ -132,14 +134,17 @@ public class Server {
 
         private synchronized boolean sendGroup(Message message) {
             System.out.println("Inside Send group");
-            List<Group> groups = user.getGroups();
+            List<Group> groups = UserService.loadGroups();
             System.out.println(groups);
             for (Group each : groups) {
                 System.out.println(each.getName());
                 if (each.getName().equals(message.getReceiver())) {
                     for (User one : each.getUsers()) {
+                        if (one.getUsername().equals(user.getUsername()))
+                            continue;
                         Message msg = new Message();
-                        msg.setMessage("#" + one.getUsername() + " " + "From Group " + each.getName() + " "
+                        msg.setSender(user.getUsername());
+                        msg.setMessage("#" + one.getUsername() + " " + "From Group " + each.getName() + "->"
                                 + message.getMessage());
                         System.out.println(msg.getMessage());
                         send(msg);
@@ -151,7 +156,13 @@ public class Server {
 
         public void run() {
             boolean flag1 = true;
+
             while (flag1) {
+                this.users = UserService.loadUsers();
+                for (User each : this.users) {
+                    if (each.getUsername().equals(user.getUsername()))
+                        each = user;
+                }
                 try {
                     message = (Message) ois.readObject();
                 } catch (IOException e) {
