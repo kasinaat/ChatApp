@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class Message implements Serializable {
     private static final long serialVersionUID = 5950169519310163575L;
     private String sender;
+    private String receiver;
     private String message;
     public Message(String message){
         this.message = message;
@@ -17,6 +18,12 @@ public class Message implements Serializable {
     }
     public void setSender(String sender){
         this.sender = sender;
+    }
+    public String getReceiver(){
+        return this.receiver;
+    }
+    public void setReceiver(String receiver){
+        this.receiver = receiver;
     }
     public String getMessage() {
         return this.message;

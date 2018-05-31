@@ -11,7 +11,7 @@ public class UserService {
     public static List<User> users;
 
     @SuppressWarnings("unchecked")
-    public static void loadUsers() {
+    public static List<User> loadUsers() {
         try {
             users = new ArrayList<User>();
             FileInputStream fis = new FileInputStream(
@@ -22,6 +22,18 @@ public class UserService {
 
         }
 
+        return users;
+    }
+
+    public static void storeUsers(List<User> newUsers) {
+        try {
+            FileOutputStream fos = new FileOutputStream(
+                    "C:\\Users\\Administrator\\Desktop\\Assignments\\ChatApp\\lib\\users.txt");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(newUsers);
+        } catch (Exception e) {
+
+        }
     }
 
     public static User login() {
@@ -38,7 +50,8 @@ public class UserService {
             for (User each : users) {
                 // System.out.println(each.getPassword()+" "+user.getPassword());
                 if (each.compareTo(user) == 0) {
-                    return user;
+                    System.out.println(user.getGroups());
+                    return each;
                 }
             }
         } catch (Exception e) {

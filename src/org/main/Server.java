@@ -3,8 +3,8 @@ package org.main;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.regex.*;
 
 import org.models.*;
 
@@ -78,6 +78,8 @@ public class Server {
                 oos = new ObjectOutputStream(socket.getOutputStream());
                 ois = new ObjectInputStream(socket.getInputStream());
                 user = (User) ois.readObject();
+                System.out.println(user.getUsername());
+                System.out.println(user.getGroups());
             } catch (IOException ioe) {
                 System.out.println("Cannot create new I/O");
             } catch (ClassNotFoundException cnfe) {
@@ -92,8 +94,8 @@ public class Server {
                 String user = arg[0].substring(1);
                 System.out.println(user);
                 int start = message.getMessage().indexOf(" ");
-                String content =message.getSender()+":"+ message.getMessage().substring(start+1);
-                System.out.println(content +" "+start);
+                String content = message.getSender() + ":" + message.getMessage().substring(start + 1);
+                System.out.println(content + " " + start);
                 for (int i = 0; i < activeClients.size(); i++) {
                     ClientThread temp = activeClients.get(i);
                     String match = temp.getUser().getUsername();
@@ -117,7 +119,7 @@ public class Server {
 
         }
 
-        synchronized void remove(User user) {
+        private synchronized void remove(User user) {
             for (int i = 0; i < activeClients.size(); ++i) {
                 ClientThread ct = activeClients.get(i);
                 // if found remove it
@@ -126,6 +128,25 @@ public class Server {
                     break;
                 }
             }
+        }
+
+        private synchronized boolean sendGroup(Message message) {
+            System.out.println("Inside Send group");
+            List<Group> groups = user.getGroups();
+            System.out.println(groups);
+            for (Group each : groups) {
+                System.out.println(each.getName());
+                if (each.getName().equals(message.getReceiver())) {
+                    for (User one : each.getUsers()) {
+                        Message msg = new Message();
+                        msg.setMessage("#" + one.getUsername() + " " + "From Group " + each.getName() + " "
+                                + message.getMessage());
+                        System.out.println(msg.getMessage());
+                        send(msg);
+                    }
+                }
+            }
+            return false;
         }
 
         public void run() {
@@ -139,9 +160,11 @@ public class Server {
                 } catch (ClassNotFoundException ce) {
                     break;
                 }
+                Pattern pattern = Pattern.compile("#[a-zA-Z0-9 ]+#");
                 String msg = message.getMessage();
                 String[] arg = msg.split(" ");
-                System.out.println(msg + "  "+arg[0]);
+                // System.out.println(msg + " "+arg[0]);
+                Matcher match = pattern.matcher(msg);
                 if (arg[0].equalsIgnoreCase("#online")) {
                     write("List of Users Online ");
                     for (int i = 0; i < activeClients.size(); i++) {
@@ -151,6 +174,15 @@ public class Server {
                 } else if (arg[0].equalsIgnoreCase("#logout")) {
                     System.out.println("Logged Out Successfully");
                     flag1 = false;
+                } else if (match.find()) {
+                    System.out.println("Sending to group");
+                    // System.out.println(match.start() +" " + match.end());
+                    // System.out.println(n.substring(match.start()+1,match.end()-1));
+                    message.setReceiver(msg.substring(match.start() + 1, match.end() - 1));
+                    System.out.println("Receiver = " + message.getReceiver());
+                    message.setMessage(msg.replaceFirst(msg.substring(match.start(), match.end()), ""));
+                    System.out.println(message.getMessage());
+                    sendGroup(message);
                 } else {
                     send(message);
                 }
